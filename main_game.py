@@ -1,6 +1,7 @@
 import pygame
 from sys import exit
 import os
+#import random
 pygame.font.init()
 
 
@@ -31,12 +32,16 @@ RED = (255,0,0)
 BLUE = (100,0,255)
 YEllOW_crl = (255, 255, 0)
 SPACESHIP_WIDTH, SPACESHIP_HEIGHT = 50,40
+ability_WIDTH = 40
+ability_HEIGHT = 45
 
 
 yellow_spaceship_image = pygame.image.load(os.path.join("Emojy","PEPEGA.png"))
 red_spaceship_image = pygame.image.load(os.path.join("Emojy","5HEAD.png"))
+speed_ability_image = pygame.image.load(os.path.join('Emojy',"pixil-frame-0.png"))
+speed_ability_image = pygame.transform.scale(speed_ability_image,(ability_WIDTH , ability_HEIGHT))
 yellow_spaceship_image = pygame.transform.scale(yellow_spaceship_image, (SPACESHIP_WIDTH, SPACESHIP_HEIGHT))
-red_spaceship_image =pygame.transform.scale(red_spaceship_image, (SPACESHIP_WIDTH, SPACESHIP_HEIGHT))
+red_spaceship_image = pygame.transform.scale(red_spaceship_image, (SPACESHIP_WIDTH, SPACESHIP_HEIGHT))
 
 
 #red's keys
@@ -61,6 +66,16 @@ def red_spaceship_movement(key_pressed,red):
     if key_pressed[pygame.K_DOWN] and red.y + VEL + red.height < SCREEN_HEIGHT: #down
         red.y += VEL
 
+def ability_collide(ability_slots ,red , yellow):
+    for speed_ability in ability_slots:
+        if red.colliderect(speed_ability):
+            pygame.event.post(pygame.event.Event(RED_HIT))
+            ability_slots.remove(speed_ability)
+    for speed_ability in ability_slots:
+        if yellow.colliderect(speed_ability):
+            pygame.event.post(pygame.event.Event(RED_HIT))
+            ability_slots.remove(speed_ability)
+
 
 
 def handle_bullets(BULLETS_YELLOW, BULLETS_RED, red, yellow):
@@ -79,7 +94,6 @@ def handle_bullets(BULLETS_YELLOW, BULLETS_RED, red, yellow):
 
         elif bullet.x < 0:
             BULLETS_RED.remove(bullet)
-
 
 
 
@@ -111,7 +125,7 @@ def GAME_OVER_SCREEN(text):
 
 
 
-def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH):
+def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH , speed_ability):
     screen.blit(space,(0, 0))
     pygame.draw.rect(screen, BLACK, BORDER)
     red_health_text = HEALTH_FONT.render('Health: '+ str(RED_HEALTH), 1 , WHITE )
@@ -120,7 +134,7 @@ def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH
     screen.blit(yellow_health_text, (10, 10))
     screen.blit(yellow_spaceship_image, (yellow.x,yellow.y))
     screen.blit(red_spaceship_image , (red.x, red.y))
-
+    screen.blit(speed_ability_image , (speed_ability.x,speed_ability.y))
 
     for bullet in BULLETS_RED:
         pygame.draw.rect(screen,RED,bullet)
@@ -133,7 +147,7 @@ def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH
 
 BULLETS_YELLOW = []
 BULLETS_RED = []
-
+ability_slots = []
 
 
 def main():
@@ -141,6 +155,7 @@ def main():
     YELLOW_HEALTH = 10
     red = pygame.Rect(500, 100,SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
     yellow = pygame.Rect(300, 100, SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
+    speed_ability = pygame.Rect(500,200,ability_WIDTH , ability_HEIGHT)
     while True:
 
         clock.tick(FPS)
@@ -174,12 +189,13 @@ def main():
             GAME_OVER_SCREEN(winner_text)
             break
         key_pressed = pygame.key.get_pressed()
-        draw_window(red,yellow,BULLETS_YELLOW,BULLETS_RED,YELLOW_HEALTH,RED_HEALTH)
+        draw_window(red,yellow,BULLETS_YELLOW,BULLETS_RED,YELLOW_HEALTH,RED_HEALTH, speed_ability)
         yellow_spaceship_movement(key_pressed, yellow)
         red_spaceship_movement(key_pressed, red)
 
         #print(BULLETS_YELLOW,BULLETS_RED)
-        handle_bullets(BULLETS_YELLOW,BULLETS_RED,red,yellow,)
+        handle_bullets(BULLETS_YELLOW,BULLETS_RED,red,yellow)
+        ability_collide(ability_slots,red,yellow)
     main()
 
 
