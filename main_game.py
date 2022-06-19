@@ -43,7 +43,8 @@ speed_ability_image = pygame.image.load(os.path.join('Emojy',"pixil-frame-0.png"
 speed_ability_image = pygame.transform.scale(speed_ability_image,(ability_WIDTH , ability_HEIGHT))
 yellow_spaceship_image = pygame.transform.scale(yellow_spaceship_image, (SPACESHIP_WIDTH, SPACESHIP_HEIGHT))
 red_spaceship_image = pygame.transform.scale(red_spaceship_image, (SPACESHIP_WIDTH, SPACESHIP_HEIGHT))
-
+speed_ability_gained = pygame.image.load(os.path.join("Emojy","speed_ability(black).png"))
+speed_ability_gained = pygame.transform.scale(speed_ability_gained, (50, 55))
 
 #red's keys
 def yellow_spaceship_movement(key_pressed,yellow,VELO):
@@ -176,6 +177,8 @@ def main():
     is_speed_ability_on_screen = True
     current_time = 0
     ability_time_start = 0
+    speed_ability_gained_on_screen_red = False
+    speed_ability_gained_on_screen_yellow = False
     while True:
 
         clock.tick(FPS)
@@ -224,7 +227,7 @@ def main():
         if current_time > 4000:
 
             if is_speed_ability_on_screen:
-                speed_ability = pygame.Rect(700, 300, ability_WIDTH, ability_HEIGHT)
+                speed_ability = pygame.Rect(400, 300, ability_WIDTH, ability_HEIGHT)
                 screen.blit(speed_ability_image,(speed_ability.x,speed_ability.y))
                 ability_slots.append(speed_ability)
 
@@ -232,16 +235,25 @@ def main():
                     is_speed_ability_on_screen = False
                     VEL += 10
                     ability_time_start = pygame.time.get_ticks()
-
+                    speed_ability_gained_on_screen_red = True
 
                 if ability_collision_yellow(ability_slots, yellow):
                     is_speed_ability_on_screen = False
                     VEL += 10
                     ability_time_start = pygame.time.get_ticks()
+                    speed_ability_gained_on_screen_yellow = True
+
+        if speed_ability_gained_on_screen_red:
+            
+            screen.blit(speed_ability_gained, ( SCREEN_WIDTH - speed_ability_gained.get_width() -10 , 45))
+
+        if speed_ability_gained_on_screen_yellow:
+            screen.blit(speed_ability_gained, (10, 45))
 
         if current_time - ability_time_start > 3000:
             VEL = 5
-
+            speed_ability_gained_on_screen_yellow = False
+            speed_ability_gained_on_screen_red = False
         pygame.display.update()
 
     main()
