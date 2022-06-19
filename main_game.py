@@ -14,7 +14,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
 pygame.display.set_caption("First game!")
 clock = pygame.time.Clock()
 FPS = 60
-#VEL = 5
+
 
 MAX_BULLETS = 4
 BULLET_VEL = 5
@@ -139,11 +139,9 @@ def GAME_OVER_SCREEN(text):
     main()
 
 
-#def draw_ability():
-     #speed_ability = pygame.Rect(500, 200, ability_WIDTH, ability_HEIGHT)
-     #screen.blit(speed_ability_image, (speed_ability.x, speed_ability.y))
 
-def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH ,   ):
+
+def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH):
     screen.blit(space,(0, 0))
     pygame.draw.rect(screen, BLACK, BORDER)
     red_health_text = HEALTH_FONT.render('Health: '+ str(RED_HEALTH), 1 , WHITE )
@@ -153,8 +151,6 @@ def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH
     screen.blit(yellow_spaceship_image, (yellow.x,yellow.y))
     screen.blit(red_spaceship_image , (red.x, red.y))
 
-    #if is_speed_ability_on_screen:
-        #screen.blit(speed_ability_image, (speed_ability.x, speed_ability.y))
 
 
     for bullet in BULLETS_RED:
@@ -177,8 +173,9 @@ def main():
     YELLOW_HEALTH = 10
     red = pygame.Rect(800, 100,SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
     yellow = pygame.Rect(300, 100, SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
-    #speed_ability = pygame.Rect(500,300,ability_WIDTH,ability_HEIGHT)
     is_speed_ability_on_screen = True
+    current_time = 0
+    ability_time_start = 0
     while True:
 
         clock.tick(FPS)
@@ -218,26 +215,33 @@ def main():
 
         yellow_spaceship_movement(key_pressed, yellow,VEL)
         red_spaceship_movement(key_pressed, red,VEL)
-
-        #print(BULLETS_YELLOW,BULLETS_RED)
-        #print(ability_slots)
+        current_time = pygame.time.get_ticks()
+        #print(current_time)
+        #print(VEL)
         handle_bullets(BULLETS_YELLOW,BULLETS_RED,red,yellow)
-        #ability_collision(ability_slots,red,yellow)
-        #screen.blit(speed_ability_image, (400, 300))
         draw_window(red, yellow, BULLETS_YELLOW, BULLETS_RED, YELLOW_HEALTH, RED_HEALTH )
 
-        if is_speed_ability_on_screen:
-            speed_ability = pygame.Rect(500, 300, ability_WIDTH, ability_HEIGHT)
-            screen.blit(speed_ability_image,(speed_ability.x,speed_ability.y))
-            ability_slots.append(speed_ability)
+        if current_time > 4000:
 
-            if ability_collision_red(ability_slots,red):
-                is_speed_ability_on_screen = False
-                VEL += 10
+            if is_speed_ability_on_screen:
+                speed_ability = pygame.Rect(700, 300, ability_WIDTH, ability_HEIGHT)
+                screen.blit(speed_ability_image,(speed_ability.x,speed_ability.y))
+                ability_slots.append(speed_ability)
 
-            if ability_collision_yellow(ability_slots, yellow):
-                is_speed_ability_on_screen = False
-                VEL += 10
+                if ability_collision_red(ability_slots,red):
+                    is_speed_ability_on_screen = False
+                    VEL += 10
+                    ability_time_start = pygame.time.get_ticks()
+
+
+                if ability_collision_yellow(ability_slots, yellow):
+                    is_speed_ability_on_screen = False
+                    VEL += 10
+                    ability_time_start = pygame.time.get_ticks()
+
+        if current_time - ability_time_start > 3000:
+            VEL = 5
+
         pygame.display.update()
 
     main()
