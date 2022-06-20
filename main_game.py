@@ -2,7 +2,7 @@ import pygame
 from sys import exit
 import os
  #import time
-#import random
+import random
 pygame.font.init()
 
 
@@ -22,6 +22,9 @@ BULLET_VEL = 5
 YELLOW_HIT = pygame.USEREVENT + 1
 RED_HIT = pygame.USEREVENT + 2
 ABILITY_COLLIDE = pygame.USEREVENT + 3
+EXIST_ability, t , trail = pygame.USEREVENT + 4 , 7000 , []
+pygame.time.set_timer(EXIST_ability, t)
+
 
 space = pygame.image.load(os.path.join('Emojy','space.png'))
 HEALTH_FONT = pygame.font.SysFont('comicsans', 40)
@@ -46,6 +49,9 @@ red_spaceship_image = pygame.transform.scale(red_spaceship_image, (SPACESHIP_WID
 speed_ability_gained = pygame.image.load(os.path.join("Emojy","speed_ability(black).png"))
 speed_ability_gained = pygame.transform.scale(speed_ability_gained, (50, 55))
 
+
+
+
 #red's keys
 def yellow_spaceship_movement(key_pressed,yellow,VELO):
 
@@ -68,14 +74,6 @@ def red_spaceship_movement(key_pressed,red,VELO):
         red.y -= VELO
     if key_pressed[pygame.K_DOWN] and red.y + VELO + red.height < SCREEN_HEIGHT: #down
         red.y += VELO
-
-#def ability_collision(ability_slots ,red , yellow):
-    #for speed_ability in ability_slots:
-        #if red.colliderect(speed_ability):
-            #ability_slots.remove(speed_ability)
-    #for speed_ability in ability_slots:
-        #if yellow.colliderect(speed_ability):
-            #ability_slots.remove(speed_ability)
 
 def ability_collision_red(ability_slots,red):
     for speed_ability in ability_slots:
@@ -141,7 +139,6 @@ def GAME_OVER_SCREEN(text):
 
 
 
-
 def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH):
     screen.blit(space,(0, 0))
     pygame.draw.rect(screen, BLACK, BORDER)
@@ -179,6 +176,8 @@ def main():
     ability_time_start = 0
     speed_ability_gained_on_screen_red = False
     speed_ability_gained_on_screen_yellow = False
+    speed_pos_x = random.randint(0,1200)
+    speed_pos_y = random.randint(0, 800)
     while True:
 
         clock.tick(FPS)
@@ -195,7 +194,16 @@ def main():
                 if event.key == pygame.K_RCTRL and len(BULLETS_RED) < MAX_BULLETS:
                     bullet = pygame.Rect(red.x , red.y + red.height // 2 - 2, 10, 5)
                     BULLETS_RED.append(bullet)
-
+            if event.type == EXIST_ability:
+                print('7 sec')
+                if is_speed_ability_on_screen:
+                    is_speed_ability_on_screen = False
+                    continue
+                if is_speed_ability_on_screen == False:
+                    speed_pos_x = random.randint(0, 1200)
+                    speed_pos_y = random.randint(0, 800)
+                    is_speed_ability_on_screen = True
+                    continue
             if event.type == RED_HIT:
                 RED_HEALTH -= 1
 
@@ -219,15 +227,15 @@ def main():
         yellow_spaceship_movement(key_pressed, yellow,VEL)
         red_spaceship_movement(key_pressed, red,VEL)
         current_time = pygame.time.get_ticks()
-        #print(current_time)
-        #print(VEL)
         handle_bullets(BULLETS_YELLOW,BULLETS_RED,red,yellow)
         draw_window(red, yellow, BULLETS_YELLOW, BULLETS_RED, YELLOW_HEALTH, RED_HEALTH )
+
+
 
         if current_time > 4000:
 
             if is_speed_ability_on_screen:
-                speed_ability = pygame.Rect(400, 300, ability_WIDTH, ability_HEIGHT)
+                speed_ability = pygame.Rect(speed_pos_x, speed_pos_y, ability_WIDTH, ability_HEIGHT)
                 screen.blit(speed_ability_image,(speed_ability.x,speed_ability.y))
                 ability_slots.append(speed_ability)
 
@@ -244,11 +252,11 @@ def main():
                     speed_ability_gained_on_screen_yellow = True
 
         if speed_ability_gained_on_screen_red:
-            
-            screen.blit(speed_ability_gained, ( SCREEN_WIDTH - speed_ability_gained.get_width() -10 , 45))
+
+            screen.blit(speed_ability_gained, ( SCREEN_WIDTH - speed_ability_gained.get_width() -10 , 63))
 
         if speed_ability_gained_on_screen_yellow:
-            screen.blit(speed_ability_gained, (10, 45))
+            screen.blit(speed_ability_gained, (10, 63))
 
         if current_time - ability_time_start > 3000:
             VEL = 5
