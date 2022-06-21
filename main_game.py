@@ -178,6 +178,7 @@ def main():
     speed_ability_gained_on_screen_yellow = False
     speed_pos_x = random.randint(0,1200)
     speed_pos_y = random.randint(0, 800)
+    ability_time_usesage = 0
     while True:
 
         clock.tick(FPS)
@@ -241,15 +242,17 @@ def main():
 
                 if ability_collision_red(ability_slots,red):
                     is_speed_ability_on_screen = False
-                    VEL += 10
+                    VEL = 10
                     ability_time_start = pygame.time.get_ticks()
                     speed_ability_gained_on_screen_red = True
+                    ability_time_usesage += 3000
 
                 if ability_collision_yellow(ability_slots, yellow):
                     is_speed_ability_on_screen = False
-                    VEL += 10
+                    VEL = 10
                     ability_time_start = pygame.time.get_ticks()
                     speed_ability_gained_on_screen_yellow = True
+                    ability_time_usesage += 3000
 
         if speed_ability_gained_on_screen_red:
 
@@ -258,10 +261,12 @@ def main():
         if speed_ability_gained_on_screen_yellow:
             screen.blit(speed_ability_gained, (10, 63))
 
-        if current_time - ability_time_start > 3000:
+        if current_time - ability_time_start > ability_time_usesage:
             VEL = 5
             speed_ability_gained_on_screen_yellow = False
             speed_ability_gained_on_screen_red = False
+            ability_time_usesage = 0
+        print(ability_time_usesage)
         pygame.display.update()
 
     main()
