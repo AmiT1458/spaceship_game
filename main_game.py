@@ -11,19 +11,19 @@ pygame.init()
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
 screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
-pygame.display.set_caption("First game!")
+pygame.display.set_caption("The god of the space...")
 clock = pygame.time.Clock()
 FPS = 60
 
 
 MAX_BULLETS = 4
-BULLET_VEL = 5
+BULLET_VEL = 10
 
 YELLOW_HIT = pygame.USEREVENT + 1
 RED_HIT = pygame.USEREVENT + 2
 ABILITY_COLLIDE = pygame.USEREVENT + 3
 EXIST_ability, t , trail = pygame.USEREVENT + 4 , 7000 , []
-pygame.time.set_timer(EXIST_ability, t)
+pygame.time.set_timer(EXIST_ability, t) #sets a timer for every 7 seconds have passed
 
 
 space = pygame.image.load(os.path.join('Emojy','space.png'))
@@ -75,6 +75,8 @@ def red_spaceship_movement(key_pressed,red,VELO):
     if key_pressed[pygame.K_DOWN] and red.y + VELO + red.height < SCREEN_HEIGHT: #down
         red.y += VELO
 
+
+#checks if there's a collision
 def ability_collision_red(ability_slots,red):
     for speed_ability in ability_slots:
         if red.colliderect(speed_ability):
@@ -84,6 +86,7 @@ def ability_collision_red(ability_slots,red):
 
     return False
 
+#checks if there's a collision
 def ability_collision_yellow(ability_slots,yellow):
     for speed_ability in ability_slots:
         if yellow.colliderect(speed_ability):
@@ -179,7 +182,7 @@ def main():
     speed_pos_x = random.randint(0,1200)
     speed_pos_y = random.randint(0, 800)
     ability_time_usesage = 0
-    while True:
+    while True: #game loop
 
         clock.tick(FPS)
         for event in pygame.event.get():
@@ -195,13 +198,13 @@ def main():
                 if event.key == pygame.K_RCTRL and len(BULLETS_RED) < MAX_BULLETS:
                     bullet = pygame.Rect(red.x , red.y + red.height // 2 - 2, 10, 5)
                     BULLETS_RED.append(bullet)
-            if event.type == EXIST_ability:
+            if event.type == EXIST_ability: # checking if 7 sec have passed every time
                 print('7 sec')
                 if is_speed_ability_on_screen:
                     is_speed_ability_on_screen = False
                     continue
                 if is_speed_ability_on_screen == False:
-                    speed_pos_x = random.randint(0, 1200)
+                    speed_pos_x = random.randint(0, 1200) # giving a new x / y pos before creating the ability again
                     speed_pos_y = random.randint(0, 800)
                     is_speed_ability_on_screen = True
                     continue
@@ -233,21 +236,21 @@ def main():
 
 
 
-        if current_time > 4000:
+        if current_time > 4000: # if it past four secs it creates the ability
 
             if is_speed_ability_on_screen:
-                speed_ability = pygame.Rect(speed_pos_x, speed_pos_y, ability_WIDTH, ability_HEIGHT)
-                screen.blit(speed_ability_image,(speed_ability.x,speed_ability.y))
+                speed_ability = pygame.Rect(speed_pos_x, speed_pos_y, ability_WIDTH, ability_HEIGHT) #speed_rect
+                screen.blit(speed_ability_image,(speed_ability.x,speed_ability.y)) #speed image
                 ability_slots.append(speed_ability)
 
-                if ability_collision_red(ability_slots,red):
+                if ability_collision_red(ability_slots,red): # if collide with red the image disappears and increacses his speed
                     is_speed_ability_on_screen = False
                     VEL = 10
                     ability_time_start = pygame.time.get_ticks()
                     speed_ability_gained_on_screen_red = True
                     ability_time_usesage += 3000
 
-                if ability_collision_yellow(ability_slots, yellow):
+                if ability_collision_yellow(ability_slots, yellow): # if collide with yellow the image disappears and increacses his speed
                     is_speed_ability_on_screen = False
                     VEL = 10
                     ability_time_start = pygame.time.get_ticks()
@@ -261,12 +264,12 @@ def main():
         if speed_ability_gained_on_screen_yellow:
             screen.blit(speed_ability_gained, (10, 63))
 
-        if current_time - ability_time_start > ability_time_usesage:
+        if current_time - ability_time_start > ability_time_usesage: # checking if it past ability_time_usesage (7) seconds
             VEL = 5
             speed_ability_gained_on_screen_yellow = False
             speed_ability_gained_on_screen_red = False
             ability_time_usesage = 0
-        print(ability_time_usesage)
+
         pygame.display.update()
 
     main()
