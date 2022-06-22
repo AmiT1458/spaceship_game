@@ -4,14 +4,16 @@ import os
  #import time
 import random
 pygame.font.init()
+from Button import Button
 
 
 
 pygame.init()
+game_name = 'The god of the space...'
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
 screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
-pygame.display.set_caption("The god of the space...")
+pygame.display.set_caption(game_name)
 clock = pygame.time.Clock()
 FPS = 60
 
@@ -29,6 +31,7 @@ pygame.time.set_timer(EXIST_ability, t) #sets a timer for every 7 seconds have p
 space = pygame.image.load(os.path.join('Emojy','space.png'))
 HEALTH_FONT = pygame.font.SysFont('comicsans', 40)
 WINNER_FONT = pygame.font.SysFont('comicsans', 70)
+MENU_FONT = pygame.font.SysFont('Arial Black', 60)
 BORDER = pygame.Rect(SCREEN_WIDTH//2 - 5, 0 , 11 , SCREEN_HEIGHT)
 WHITE = (255,255,255)
 BLACK = (0,0,0)
@@ -48,7 +51,8 @@ yellow_spaceship_image = pygame.transform.scale(yellow_spaceship_image, (SPACESH
 red_spaceship_image = pygame.transform.scale(red_spaceship_image, (SPACESHIP_WIDTH, SPACESHIP_HEIGHT))
 speed_ability_gained = pygame.image.load(os.path.join("Emojy","speed_ability(black).png"))
 speed_ability_gained = pygame.transform.scale(speed_ability_gained, (50, 55))
-
+menu_screen_image = pygame.image.load(os.path.join('Emojy','menu_screen.png'))
+menu_screen_image = pygame.transform.scale(menu_screen_image,(SCREEN_WIDTH,SCREEN_HEIGHT))
 
 
 
@@ -115,6 +119,7 @@ def handle_bullets(BULLETS_YELLOW, BULLETS_RED, red, yellow):
 
 
 
+
 def GAME_OVER_SCREEN(text):
     pause = True
 
@@ -160,13 +165,37 @@ def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH
     for bullet in BULLETS_YELLOW:
         pygame.draw.rect(screen,YEllOW_crl,bullet)
 
-    #pygame.display.update()
+
+
+def menu():
+    running = True
+    while running:
+        clock.tick(FPS)
+        MOUSE_POS = pygame.mouse.get_pos()
+        play_button = Button()
+
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pass
+
+
+        screen.blit(menu_screen_image,(0,0))
+        menu_game_name = MENU_FONT.render(game_name, True, WHITE)
+        menu_game_name_rect = menu_game_name.get_rect(center=(SCREEN_WIDTH / 2 , SCREEN_HEIGHT /4 -50 ))
+        screen.blit(menu_game_name, menu_game_name_rect)
+        pygame.display.update()
+
+
 
 
 BULLETS_YELLOW = []
 BULLETS_RED = []
 ability_slots = []
-
 
 def main():
     VEL = 5
@@ -276,4 +305,4 @@ def main():
 
 
 if __name__ =="__main__":
-    main()
+    menu()
