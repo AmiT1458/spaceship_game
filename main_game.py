@@ -53,6 +53,7 @@ speed_ability_gained = pygame.image.load(os.path.join("Emojy","speed_ability(bla
 speed_ability_gained = pygame.transform.scale(speed_ability_gained, (50, 55))
 menu_screen_image = pygame.image.load(os.path.join('Emojy','menu_screen.png'))
 menu_screen_image = pygame.transform.scale(menu_screen_image,(SCREEN_WIDTH,SCREEN_HEIGHT))
+menu_screen_buttons = pygame.image.load(os.path.join('Emojy','rectangle1.png'))
 
 
 
@@ -169,10 +170,14 @@ def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH
 
 def menu():
     running = True
+    menu_game_name = MENU_FONT.render(game_name, True, WHITE)
+    menu_game_name_rect = menu_game_name.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4 - 50))
+    play_button = Button(menu_screen_buttons, menu_game_name_rect.x - 50, menu_game_name_rect.y - 50 , 'Play')
+
+
     while running:
         clock.tick(FPS)
         MOUSE_POS = pygame.mouse.get_pos()
-        play_button = Button()
 
 
         for event in pygame.event.get():
@@ -184,10 +189,10 @@ def menu():
                 pass
 
 
-        screen.blit(menu_screen_image,(0,0))
-        menu_game_name = MENU_FONT.render(game_name, True, WHITE)
-        menu_game_name_rect = menu_game_name.get_rect(center=(SCREEN_WIDTH / 2 , SCREEN_HEIGHT /4 -50 ))
+        screen.blit(menu_screen_image,(0,0)) #screen image
         screen.blit(menu_game_name, menu_game_name_rect)
+        play_button.update()
+
         pygame.display.update()
 
 
@@ -305,4 +310,4 @@ def main():
 
 
 if __name__ =="__main__":
-    menu()
+    main()
