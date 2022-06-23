@@ -1,7 +1,6 @@
 import pygame
 from sys import exit
 import os
- #import time
 import random
 pygame.font.init()
 from Button import Button
@@ -31,7 +30,7 @@ pygame.time.set_timer(EXIST_ability, t) #sets a timer for every 7 seconds have p
 space = pygame.image.load(os.path.join('Emojy','space.png'))
 HEALTH_FONT = pygame.font.SysFont('comicsans', 40)
 WINNER_FONT = pygame.font.SysFont('comicsans', 70)
-MENU_FONT = pygame.font.SysFont('Arial Black', 60)
+MENU_FONT = pygame.font.SysFont('Gameplay,',60)
 BORDER = pygame.Rect(SCREEN_WIDTH//2 - 5, 0 , 11 , SCREEN_HEIGHT)
 WHITE = (255,255,255)
 BLACK = (0,0,0)
@@ -53,8 +52,8 @@ speed_ability_gained = pygame.image.load(os.path.join("Emojy","speed_ability(bla
 speed_ability_gained = pygame.transform.scale(speed_ability_gained, (50, 55))
 menu_screen_image = pygame.image.load(os.path.join('Emojy','menu_screen.png'))
 menu_screen_image = pygame.transform.scale(menu_screen_image,(SCREEN_WIDTH,SCREEN_HEIGHT))
-menu_screen_buttons = pygame.image.load(os.path.join('Emojy','rectangle1.png'))
-
+menu_screen_buttons = pygame.image.load(os.path.join('Emojy','rectangle2.png'))
+menu_screen_buttons= pygame.transform.scale(menu_screen_buttons,(240,100))
 
 
 #red's keys
@@ -147,6 +146,31 @@ def GAME_OVER_SCREEN(text):
     main()
 
 
+def options_screen():
+
+    back_button = Button(menu_screen_buttons, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 'Back')
+    while True:
+        clock.tick(FPS)
+        MOUSE_POS = pygame.mouse.get_pos()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if back_button.checkForInput((MOUSE_POS)):
+                    menu()
+                    break
+
+
+        screen.fill((0,0,0))
+        dev_text = MENU_FONT.render('IN DEVELOPMENT',True,WHITE)
+        screen.blit(dev_text , (SCREEN_WIDTH / 2 - 200, SCREEN_HEIGHT /2 - 150))
+        back_button.update()
+        back_button.changeColor((MOUSE_POS))
+
+        pygame.display.update()
 
 def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH):
     screen.blit(space,(0, 0))
@@ -172,8 +196,9 @@ def menu():
     running = True
     menu_game_name = MENU_FONT.render(game_name, True, WHITE)
     menu_game_name_rect = menu_game_name.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4 - 50))
-    play_button = Button(menu_screen_buttons, menu_game_name_rect.x - 50, menu_game_name_rect.y - 50 , 'Play')
-
+    play_button = Button(menu_screen_buttons, SCREEN_WIDTH / 2, menu_game_name_rect.y + 170 , 'Play')
+    options_button = Button(menu_screen_buttons ,SCREEN_WIDTH / 2, menu_game_name_rect.y + 310 , 'Options')
+    quit_button = Button(menu_screen_buttons,SCREEN_WIDTH / 2, menu_game_name_rect.y + 450,'Quit')
 
     while running:
         clock.tick(FPS)
@@ -186,12 +211,27 @@ def menu():
                 pygame.quit()
                 exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                pass
+                if play_button.checkForInput(MOUSE_POS):
+                    main()
+                    break
+                if options_button.checkForInput(MOUSE_POS):
+                    options_screen()
+                    break
+                if quit_button.checkForInput(MOUSE_POS):
+                    pygame.quit()
+                    exit()
 
 
-        screen.blit(menu_screen_image,(0,0)) #screen image
+
+        screen.blit(menu_screen_image,(0,0)) #menu image
         screen.blit(menu_game_name, menu_game_name_rect)
         play_button.update()
+        play_button.changeColor((MOUSE_POS))
+        options_button.update()
+        options_button.changeColor((MOUSE_POS))
+        quit_button.update()
+        quit_button.changeColor((MOUSE_POS))
+
 
         pygame.display.update()
 
@@ -203,7 +243,8 @@ BULLETS_RED = []
 ability_slots = []
 
 def main():
-    VEL = 5
+    VEL_yellow = 5
+    VEL_red = 5
     RED_HEALTH = 10
     YELLOW_HEALTH = 10
     red = pygame.Rect(800, 100,SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
@@ -262,8 +303,8 @@ def main():
 
         key_pressed = pygame.key.get_pressed()
 
-        yellow_spaceship_movement(key_pressed, yellow,VEL)
-        red_spaceship_movement(key_pressed, red,VEL)
+        yellow_spaceship_movement(key_pressed, yellow,VEL_yellow)
+        red_spaceship_movement(key_pressed, red,VEL_red)
         current_time = pygame.time.get_ticks()
         handle_bullets(BULLETS_YELLOW,BULLETS_RED,red,yellow)
         draw_window(red, yellow, BULLETS_YELLOW, BULLETS_RED, YELLOW_HEALTH, RED_HEALTH )
@@ -279,14 +320,14 @@ def main():
 
                 if ability_collision_red(ability_slots,red): # if collide with red the image disappears and increacses his speed
                     is_speed_ability_on_screen = False
-                    VEL = 10
+                    VEL_red = 10
                     ability_time_start = pygame.time.get_ticks()
                     speed_ability_gained_on_screen_red = True
                     ability_time_usesage += 3000
 
                 if ability_collision_yellow(ability_slots, yellow): # if collide with yellow the image disappears and increacses his speed
                     is_speed_ability_on_screen = False
-                    VEL = 10
+                    VEL_yellow = 10
                     ability_time_start = pygame.time.get_ticks()
                     speed_ability_gained_on_screen_yellow = True
                     ability_time_usesage += 3000
@@ -299,7 +340,8 @@ def main():
             screen.blit(speed_ability_gained, (10, 63))
 
         if current_time - ability_time_start > ability_time_usesage: # checking if it past ability_time_usesage (7) seconds
-            VEL = 5
+            VEL_red = 5
+            VEL_yellow = 5
             speed_ability_gained_on_screen_yellow = False
             speed_ability_gained_on_screen_red = False
             ability_time_usesage = 0
@@ -310,4 +352,4 @@ def main():
 
 
 if __name__ =="__main__":
-    main()
+    menu()

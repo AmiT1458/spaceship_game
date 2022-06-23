@@ -1,7 +1,7 @@
 import pygame
 pygame.init()
-main_font = pygame.font.SysFont('gameplay',50)
-screen = pygame.display.set_mode(1200,800)
+main_font = pygame.font.SysFont('Gameplay',50)
+screen = pygame.display.set_mode((1200,800))
 
 class Button():
     def __init__(self,image, x_pos,y_pos,text_input):
