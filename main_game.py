@@ -56,6 +56,12 @@ menu_screen_buttons = pygame.image.load(os.path.join('Emojy','rectangle2.png'))
 menu_screen_buttons= pygame.transform.scale(menu_screen_buttons,(240,100))
 
 
+#music
+menu_sfx_button = pygame.mixer.Sound(os.path.join("Emojy",'menu_button1.wav'))
+speed_sfx = pygame.mixer.Sound(os.path.join("Emojy",'speed_ability_sfx.wav'))
+
+
+
 #red's keys
 def yellow_spaceship_movement(key_pressed,yellow,VELO):
 
@@ -160,6 +166,7 @@ def options_screen():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if back_button.checkForInput((MOUSE_POS)):
+                    menu_sfx_button.play()
                     menu()
                     break
 
@@ -212,12 +219,15 @@ def menu():
                 exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if play_button.checkForInput(MOUSE_POS):
+                    menu_sfx_button.play()
                     main()
                     break
                 if options_button.checkForInput(MOUSE_POS):
+                    menu_sfx_button.play()
                     options_screen()
                     break
                 if quit_button.checkForInput(MOUSE_POS):
+                    #menu_sfx_button.play()
                     pygame.quit()
                     exit()
 
@@ -324,6 +334,7 @@ def main():
                     ability_time_start = pygame.time.get_ticks()
                     speed_ability_gained_on_screen_red = True
                     ability_time_usesage += 3000
+                    speed_sfx.play()
 
                 if ability_collision_yellow(ability_slots, yellow): # if collide with yellow the image disappears and increacses his speed
                     is_speed_ability_on_screen = False
@@ -331,6 +342,7 @@ def main():
                     ability_time_start = pygame.time.get_ticks()
                     speed_ability_gained_on_screen_yellow = True
                     ability_time_usesage += 3000
+                    speed_sfx.play()
 
         if speed_ability_gained_on_screen_red:
 
