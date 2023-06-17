@@ -15,22 +15,22 @@ pygame.display.set_caption(game_name)
 clock = pygame.time.Clock()
 FPS = 60
 
-
-MAX_BULLETS = 4
-BULLET_VEL = 10
+MAX_BULLETS = 8
+BULLET_VEL = 7
 
 YELLOW_HIT = pygame.USEREVENT + 1
 RED_HIT = pygame.USEREVENT + 2
 ABILITY_COLLIDE = pygame.USEREVENT + 3
-EXIST_ability, t , trail = pygame.USEREVENT + 4 , 7000 , []
+EXIST_ability, t, trail = pygame.USEREVENT + 4, 7000, []
 pygame.time.set_timer(EXIST_ability, t) #sets a timer for every 7 seconds have passed
-
+can_shoot, t2, trail2 = pygame.USEREVENT + 5, 2000, []
+pygame.time.set_timer(can_shoot, t2)
 
 space = pygame.image.load(os.path.join('Emojy','space.png'))
 HEALTH_FONT = pygame.font.SysFont('comicsans', 40)
 WINNER_FONT = pygame.font.SysFont('comicsans', 70)
-MENU_FONT = pygame.font.SysFont('Gameplay,',60)
-BORDER = pygame.Rect(SCREEN_WIDTH//2 - 5, 0 , 11 , SCREEN_HEIGHT)
+MENU_FONT = pygame.font.SysFont('Gameplay,', 60)
+BORDER = pygame.Rect(SCREEN_WIDTH//2 - 5, 0, 11, SCREEN_HEIGHT)
 WHITE = (255,255,255)
 BLACK = (0,0,0)
 RED = (255,0,0)
@@ -39,6 +39,7 @@ YEllOW_crl = (255, 255, 0)
 SPACESHIP_WIDTH, SPACESHIP_HEIGHT = 50,40
 ability_WIDTH = 40
 ability_HEIGHT = 45
+shoot_diff = True
 
 #importing images
 yellow_spaceship_image = pygame.image.load(os.path.join("Emojy","PEPEGA.png"))
@@ -52,7 +53,7 @@ speed_ability_gained = pygame.transform.scale(speed_ability_gained, (50, 55))
 menu_screen_image = pygame.image.load(os.path.join('Emojy','menu_screen.png'))
 menu_screen_image = pygame.transform.scale(menu_screen_image,(SCREEN_WIDTH,SCREEN_HEIGHT))
 menu_screen_buttons = pygame.image.load(os.path.join('Emojy','rectangle2.png'))
-menu_screen_buttons= pygame.transform.scale(menu_screen_buttons,(240,100))
+menu_screen_buttons = pygame.transform.scale(menu_screen_buttons, (240, 100))
 
 #music
 menu_sfx_button = pygame.mixer.Sound(os.path.join("Emojy",'menu_button1.wav'))
@@ -70,9 +71,10 @@ def yellow_spaceship_movement(key_pressed, yellow, VELO):
     if key_pressed[pygame.K_s] and yellow.y + VELO + yellow.height < SCREEN_HEIGHT:  #down
         yellow.y += VELO
 
+
 #yellow's keys
 def red_spaceship_movement(key_pressed, red, VELO):
-    if key_pressed[pygame.K_LEFT]and red.x - VELO > BORDER.x + BORDER.width : #left
+    if key_pressed[pygame.K_LEFT] and red.x - VELO > BORDER.x + BORDER.width : #left
         red.x -= VELO
     if key_pressed[pygame.K_RIGHT] and red.x + VELO + red.width < SCREEN_WIDTH : #right
         red.x += VELO
@@ -80,6 +82,55 @@ def red_spaceship_movement(key_pressed, red, VELO):
         red.y -= VELO
     if key_pressed[pygame.K_DOWN] and red.y + VELO + red.height < SCREEN_HEIGHT: #down
         red.y += VELO
+
+
+def computer_movement(red, BULLETS_YELLOW, VEL, yellow, BULLETS_RED, shoot_diff):
+    current_time = pygame.time.get_ticks()
+    attacking_time = 0
+    is_shooting = False
+    
+    if len(BULLETS_YELLOW) > 0:
+        for bullet in BULLETS_YELLOW:
+            if red.midtop[1] - 5 <= bullet.y <= red.midbottom[1] + 5:
+                red.y += VEL
+            elif bullet.x == red.x:
+                pass
+    if red.midtop[1] <= yellow.midright[1] <= red.midbottom[1]:
+            attacking_time = pygame.time.get_ticks()
+            if len(BULLETS_RED) < MAX_BULLETS:
+                if current_time - attacking_time >= 500:
+                    shoot_bullet(red, yellow, BULLETS_YELLOW, BULLETS_RED, 'red')
+
+
+
+    #print(current_time, end=' ')
+    #print(attacking_time)
+
+def shoot_bullet(red, yellow, BULLETS_YELLOW, BULLETS_RED, player):
+    if player == 'yellow':
+        bullet = pygame.Rect(yellow.x + yellow.width, yellow.y + yellow.height // 2 - 2, 10, 5)
+        BULLETS_YELLOW.append(bullet)
+
+    if player == 'red':
+        bullet = pygame.Rect(red.x, red.y + red.height // 2 - 2, 10, 5)
+        BULLETS_RED.append(bullet)
+
+
+def check_pos(red, VELO):
+    if red.x - VELO < BORDER.x + BORDER.width:
+        return False
+
+    elif red.x + VELO + red.width > SCREEN_WIDTH:
+        return False
+
+    elif red.y + VELO + red.height > SCREEN_HEIGHT - VELO:
+        return False
+
+    elif red.y - VELO < 0:
+        return False
+
+    else:
+        return True
 
 
 #checks if there's a collision
@@ -92,6 +143,7 @@ def ability_collision_red(ability_slots,red):
 
     return False
 
+
 #checks if there's a collision
 def ability_collision_yellow(ability_slots,yellow):
     for speed_ability in ability_slots:
@@ -101,6 +153,7 @@ def ability_collision_yellow(ability_slots,yellow):
             return True
 
     return False
+
 
 def handle_bullets(BULLETS_YELLOW, BULLETS_RED, red, yellow):
     for bullet in BULLETS_YELLOW:
@@ -189,7 +242,6 @@ def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH
         pygame.draw.rect(screen, YEllOW_crl, bullet)
 
 
-
 def menu():
     running = True
     menu_game_name = MENU_FONT.render(game_name, True, WHITE)
@@ -222,12 +274,11 @@ def menu():
                     exit()
 
 
-
         screen.blit(menu_screen_image,(0,0)) #menu image
         screen.blit(menu_game_name, menu_game_name_rect)
         play_button.update()
         play_button.changeColor(MOUSE_POS)
-        options_button.update()
+        options_button.update() 
         options_button.changeColor(MOUSE_POS)
         quit_button.update()
         quit_button.changeColor(MOUSE_POS)
@@ -253,6 +304,7 @@ def main():
     speed_pos_x = random.randint(0,1200)
     speed_pos_y = random.randint(0, 800)
     ability_time_usesage = 0
+    shoot_diff = True
     while True: #game loop
 
         clock.tick(FPS)
@@ -263,22 +315,27 @@ def main():
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and len(BULLETS_YELLOW) < MAX_BULLETS:
-                    bullet = pygame.Rect(yellow.x + yellow.width, yellow.y + yellow.height // 2 - 2, 10, 5)
-                    BULLETS_YELLOW.append(bullet)
+                    shoot_bullet(red, yellow, BULLETS_YELLOW, BULLETS_RED, 'yellow')
+                    #bullet = pygame.Rect(yellow.x + yellow.width, yellow.y + yellow.height // 2 - 2, 10, 5)
+                    #BULLETS_YELLOW.append(bullet)
 
                 if event.key == pygame.K_l and len(BULLETS_RED) < MAX_BULLETS:
-                    bullet = pygame.Rect(red.x, red.y + red.height // 2 - 2, 10, 5)
-                    BULLETS_RED.append(bullet)
+                    shoot_bullet(red, yellow, BULLETS_YELLOW, BULLETS_RED, 'red')
+                    #bullet = pygame.Rect(red.x, red.y + red.height // 2 - 2, 10, 5)
+                    #BULLETS_RED.append(bullet)
             if event.type == EXIST_ability: # checking if 7 sec have passed every time
                 #print('7 sec')
                 if is_speed_ability_on_screen:
                     is_speed_ability_on_screen = False
                     continue
+
+
                 if not is_speed_ability_on_screen:
                     speed_pos_x = random.randint(0, 1200) # giving a new x / y pos before creating the ability again
                     speed_pos_y = random.randint(0, 800)
                     is_speed_ability_on_screen = True
                     continue
+
             if event.type == RED_HIT:
                 RED_HEALTH -= 1
 
@@ -296,11 +353,17 @@ def main():
             break
 
         key_pressed = pygame.key.get_pressed()
-        yellow_spaceship_movement(key_pressed, yellow,VEL_yellow)
-        red_spaceship_movement(key_pressed, red,VEL_red)
+        yellow_spaceship_movement(key_pressed, yellow, VEL_yellow)
+        red_spaceship_movement(key_pressed, red, VEL_red)
         current_time = pygame.time.get_ticks()
-        handle_bullets(BULLETS_YELLOW,BULLETS_RED,red,yellow)
-        draw_window(red, yellow, BULLETS_YELLOW, BULLETS_RED, YELLOW_HEALTH, RED_HEALTH )
+        handle_bullets(BULLETS_YELLOW, BULLETS_RED, red, yellow)
+        draw_window(red, yellow, BULLETS_YELLOW, BULLETS_RED, YELLOW_HEALTH, RED_HEALTH)
+
+        can_move = check_pos(red, VEL_red)
+
+        if can_move:
+            #computer_movement(red, BULLETS_YELLOW, VEL_red, yellow, BULLETS_RED, shoot_diff)
+            pass
 
         if current_time > 4000: # if it past four secs, it creates the ability
 
