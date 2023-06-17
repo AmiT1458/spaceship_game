@@ -16,8 +16,8 @@ clock = pygame.time.Clock()
 FPS = 60
 
 
-MAX_BULLETS = 4
-BULLET_VEL = 10
+MAX_BULLETS = 6
+BULLET_VEL = 11
 
 YELLOW_HIT = pygame.USEREVENT + 1
 RED_HIT = pygame.USEREVENT + 2
