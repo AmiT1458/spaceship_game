@@ -23,7 +23,8 @@ YELLOW_HIT = pygame.USEREVENT + 1
 RED_HIT = pygame.USEREVENT + 2
 ABILITY_COLLIDE = pygame.USEREVENT + 3
 EXIST_ability, t , trail = pygame.USEREVENT + 4 , 7000 , []
-pygame.time.set_timer(EXIST_ability, t) #sets a timer for every 7 seconds have passed
+CPU_shot, t2 , trail2 = pygame.USEREVENT + 5 , 250 , []
+pygame.time.set_timer(EXIST_ability, t) #sets a timer for every 7 seconds that have passed
 
 
 space = pygame.image.load(os.path.join('Emojy','space.png'))
@@ -70,6 +71,7 @@ def yellow_spaceship_movement(key_pressed, yellow, VELO):
     if key_pressed[pygame.K_s] and yellow.y + VELO + yellow.height < SCREEN_HEIGHT:  #down
         yellow.y += VELO
 
+
 #yellow's keys
 def red_spaceship_movement(key_pressed, red, VELO):
     if key_pressed[pygame.K_LEFT]and red.x - VELO > BORDER.x + BORDER.width : #left
@@ -82,6 +84,33 @@ def red_spaceship_movement(key_pressed, red, VELO):
         red.y += VELO
 
 
+def computer_movement(red, VELO, player, BULLETS_RED_CPU, current_time, can_shoot, status):
+    bullets_above = []
+    bullets_under = []
+
+    for bullet in BULLETS_YELLOW_CPU:
+        if bullet.y < red.top:
+            bullets_above.append(bullet)
+
+        elif bullet.y > red.bottom:
+            bullets_under.append(bullet)
+
+    for bullet in BULLETS_YELLOW_CPU:
+        if red.bottom > bullet.y > red.top - 7:
+            if len(bullets_above) > len(bullets_under):
+                if player.y + VELO + player.height < SCREEN_HEIGHT:
+                    red.y += VELO
+            else:
+                red.y -= VELO
+
+    if red.bottom > player.centery > red.top - 7 and len(BULLETS_RED_CPU) < MAX_BULLETS:
+        if can_shoot:
+            status = 'can_fire'
+            bullet = pygame.Rect(red.x, red.y + red.height // 2 - 2, 10, 5)
+            BULLETS_RED_CPU.append(bullet)
+
+    return status
+
 #checks if there's a collision
 def ability_collision_red(ability_slots,red):
     for speed_ability in ability_slots:
@@ -91,6 +120,7 @@ def ability_collision_red(ability_slots,red):
             return True
 
     return False
+
 
 #checks if there's a collision
 def ability_collision_yellow(ability_slots,yellow):
@@ -102,14 +132,30 @@ def ability_collision_yellow(ability_slots,yellow):
 
     return False
 
-def handle_bullets(BULLETS_YELLOW, BULLETS_RED, red, yellow):
+
+def handle_bullets(BULLETS_YELLOW, BULLETS_RED, red, yellow, BULLETS_YELLOW_CPU, BULLETS_RED_CPU):
     for bullet in BULLETS_YELLOW:
         bullet.x += BULLET_VEL
         if red.colliderect(bullet):
             pygame.event.post(pygame.event.Event(RED_HIT))
             BULLETS_YELLOW.remove(bullet)
+            BULLETS_YELLOW_CPU.remove(bullet)
         elif bullet.x > SCREEN_WIDTH:
             BULLETS_YELLOW.remove(bullet)
+
+    for bullet in BULLETS_YELLOW_CPU:
+        if bullet.x > red.right:
+            BULLETS_YELLOW_CPU.remove(bullet)
+
+    for bullet in BULLETS_RED_CPU:
+        bullet.x -= BULLET_VEL
+        if yellow.colliderect(bullet):
+            pygame.event.post(pygame.event.Event(YELLOW_HIT))
+            BULLETS_RED_CPU.remove(bullet)
+
+        elif bullet.x < 0:
+            BULLETS_RED_CPU.remove(bullet)
+
     for bullet in BULLETS_RED:
         bullet.x -= BULLET_VEL
         if yellow.colliderect(bullet):
@@ -172,7 +218,8 @@ def options_screen():
 
         pygame.display.update()
 
-def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH):
+
+def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED, YELLOW_HEALTH, RED_HEALTH, BULLETS_RED_CPU):
     screen.blit(space,(0, 0))
     pygame.draw.rect(screen, BLACK, BORDER)
     red_health_text = HEALTH_FONT.render('Health: '+ str(RED_HEALTH), 1 , WHITE )
@@ -187,6 +234,9 @@ def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH
 
     for bullet in BULLETS_YELLOW:
         pygame.draw.rect(screen, YEllOW_crl, bullet)
+
+    for bullet in BULLETS_RED_CPU:
+        pygame.draw.rect(screen,RED, bullet)
 
 
 
@@ -237,6 +287,8 @@ def menu():
 BULLETS_YELLOW = []
 BULLETS_RED = []
 ability_slots = []
+BULLETS_YELLOW_CPU = []
+BULLETS_RED_CPU = []
 
 def main():
     VEL_yellow = 5
@@ -253,6 +305,10 @@ def main():
     speed_pos_x = random.randint(0,1200)
     speed_pos_y = random.randint(0, 800)
     ability_time_usesage = 0
+    can_shoot = True
+    CPU_status = "can_fire"
+    last_shot = 0
+
     while True: #game loop
 
         clock.tick(FPS)
@@ -265,10 +321,12 @@ def main():
                 if event.key == pygame.K_SPACE and len(BULLETS_YELLOW) < MAX_BULLETS:
                     bullet = pygame.Rect(yellow.x + yellow.width, yellow.y + yellow.height // 2 - 2, 10, 5)
                     BULLETS_YELLOW.append(bullet)
+                    BULLETS_YELLOW_CPU.append(bullet)
 
                 if event.key == pygame.K_l and len(BULLETS_RED) < MAX_BULLETS:
                     bullet = pygame.Rect(red.x, red.y + red.height // 2 - 2, 10, 5)
                     BULLETS_RED.append(bullet)
+
             if event.type == EXIST_ability: # checking if 7 sec have passed every time
                 #print('7 sec')
                 if is_speed_ability_on_screen:
@@ -285,6 +343,15 @@ def main():
             if event.type == YELLOW_HIT:
                 YELLOW_HEALTH -= 1
 
+        if red.bottom > yellow.centery > red.top - 7 and len(BULLETS_RED_CPU) < MAX_BULLETS:
+            if CPU_status == 'can_fire':
+                last_shot = pygame.time.get_ticks()
+                can_shoot = False
+                CPU_status = "can't fire"
+
+        if current_time - last_shot > t2:
+            can_shoot = True
+            CPU_status = 'can_fire'
 
         winner_text = ""
         if RED_HEALTH <= 0:
@@ -299,8 +366,9 @@ def main():
         yellow_spaceship_movement(key_pressed, yellow,VEL_yellow)
         red_spaceship_movement(key_pressed, red,VEL_red)
         current_time = pygame.time.get_ticks()
-        handle_bullets(BULLETS_YELLOW,BULLETS_RED,red,yellow)
-        draw_window(red, yellow, BULLETS_YELLOW, BULLETS_RED, YELLOW_HEALTH, RED_HEALTH )
+        handle_bullets(BULLETS_YELLOW,BULLETS_RED,red,yellow, BULLETS_YELLOW_CPU, BULLETS_RED_CPU)
+        draw_window(red, yellow, BULLETS_YELLOW, BULLETS_RED, YELLOW_HEALTH, RED_HEALTH, BULLETS_RED_CPU)
+        CPU_status = computer_movement(red, VEL_red, yellow, BULLETS_RED_CPU, current_time, can_shoot, CPU_status)
 
         if current_time > 4000: # if it past four secs, it creates the ability
 
