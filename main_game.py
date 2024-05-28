@@ -2,9 +2,10 @@ import pygame
 from sys import exit
 import os
 import random
+from math import sin
 pygame.init()
 pygame.font.init()
-from Button import Button
+from helpers.Button import Button
 
 
 game_name = 'The god of the space...'
@@ -16,7 +17,7 @@ clock = pygame.time.Clock()
 FPS = 60
 
 MAX_BULLETS = 8
-BULLET_VEL = 7
+BULLET_VEL = 13
 
 YELLOW_HIT = pygame.USEREVENT + 1
 RED_HIT = pygame.USEREVENT + 2
@@ -40,6 +41,7 @@ SPACESHIP_WIDTH, SPACESHIP_HEIGHT = 50,40
 ability_WIDTH = 40
 ability_HEIGHT = 45
 shoot_diff = True
+hit_animation_delay = 500
 
 #importing images
 yellow_spaceship_image = pygame.image.load(os.path.join("Emojy","PEPEGA.png"))
@@ -115,6 +117,9 @@ def shoot_bullet(red, yellow, BULLETS_YELLOW, BULLETS_RED, player):
         bullet = pygame.Rect(red.x, red.y + red.height // 2 - 2, 10, 5)
         BULLETS_RED.append(bullet)
 
+
+def got_hit(player_img):
+    player_img.set_alpha(abs(int(sin(current_time) * 255)))
 
 def check_pos(red, VELO):
     if red.x - VELO < BORDER.x + BORDER.width:
@@ -225,7 +230,7 @@ def options_screen():
 
         pygame.display.update()
 
-def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED,YELLOW_HEALTH,RED_HEALTH):
+def draw_window(red,yellow, BULLETS_YELLOW, BULLETS_RED, YELLOW_HEALTH, RED_HEALTH):
     screen.blit(space,(0, 0))
     pygame.draw.rect(screen, BLACK, BORDER)
     red_health_text = HEALTH_FONT.render('Health: '+ str(RED_HEALTH), 1 , WHITE )
@@ -290,10 +295,15 @@ BULLETS_RED = []
 ability_slots = []
 
 def main():
+    global current_time
+
     VEL_yellow = 5
     VEL_red = 5
     RED_HEALTH = 10
     YELLOW_HEALTH = 10
+    red_hit = False
+    yellow_hit = False
+
     red = pygame.Rect(800, 100,SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
     yellow = pygame.Rect(300, 100, SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
     is_speed_ability_on_screen = True
@@ -304,6 +314,8 @@ def main():
     speed_pos_x = random.randint(0,1200)
     speed_pos_y = random.randint(0, 800)
     ability_time_usesage = 0
+    red_hit_time = pygame.time.get_ticks()
+    yellow_hit_time = pygame.time.get_ticks()
     shoot_diff = True
     while True: #game loop
 
@@ -338,10 +350,13 @@ def main():
 
             if event.type == RED_HIT:
                 RED_HEALTH -= 1
+                red_hit_time = pygame.time.get_ticks()
+                red_hit = True
 
             if event.type == YELLOW_HIT:
                 YELLOW_HEALTH -= 1
-
+                yellow_hit_time = pygame.time.get_ticks()
+                yellow_hit = True
 
         winner_text = ""
         if RED_HEALTH <= 0:
@@ -360,6 +375,18 @@ def main():
         draw_window(red, yellow, BULLETS_YELLOW, BULLETS_RED, YELLOW_HEALTH, RED_HEALTH)
 
         can_move = check_pos(red, VEL_red)
+
+        if red_hit:
+            got_hit(red_spaceship_image)
+            if current_time - red_hit_time > hit_animation_delay:
+                red_hit = False
+                red_spaceship_image.set_alpha(255)
+
+        if yellow_hit:
+            got_hit(yellow_spaceship_image)
+            if current_time - yellow_hit_time > hit_animation_delay:
+                yellow_hit = False
+                yellow_spaceship_image.set_alpha(255)
 
         if can_move:
             #computer_movement(red, BULLETS_YELLOW, VEL_red, yellow, BULLETS_RED, shoot_diff)
